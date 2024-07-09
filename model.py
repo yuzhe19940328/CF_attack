@@ -26,3 +26,45 @@ class MNIST_model(torch.nn.Module):
         loss.backward()
         self.optimizer.step()
         return loss.item()
+
+
+class CelebA_model(torch.nn.Module):
+    def __init__(self,args):
+        super(CelebA_model, self).__init__()
+        self.args = args
+        self.backbone = networks.ResNet(args.input_shape)
+        self.classifier=networks.Classifier(self.backbone.n_outputs,args.n_classes)
+        self.network = nn.Sequential(self.backbone,self.classifier)
+        self.loss = nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.Adam(self.network.parameters(), lr=args.lr)
+
+    def forward(self, x):
+        return self.network(x)
+    
+    def update(self, x, y):
+        self.optimizer.zero_grad()
+        loss = self.loss(self.forward(x), y)
+        loss.backward()
+        self.optimizer.step()
+        return loss.item()
+
+class DeepFashion_model(torch.nn.Module):
+    def __init__(self,args):
+        super(DeepFashion_model, self).__init__()
+        self.args = args
+        self.backbone = networks.ResNet(args.input_shape)
+        self.classifier=networks.Classifier(self.backbone.n_outputs,args.n_classes)
+        self.network = nn.Sequential(self.backbone,self.classifier)
+        self.loss = nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.Adam(self.network.parameters(), lr=args.lr)
+
+    def forward(self, x):
+        return self.network(x)
+    
+    def update(self, x, y):
+        self.optimizer.zero_grad()
+        loss = self.loss(self.forward(x), y)
+        loss.backward()
+        self.optimizer.step()
+        return loss.item()
+
