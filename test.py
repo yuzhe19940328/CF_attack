@@ -5,11 +5,12 @@ import torch
 import torchvision
 import torch.utils.data
 import argparse
-from model import MNIST_model
+from model import MNIST_model, CelebA_model, DeepFashion_model
 from data_loader import get_test_loader
 from utils import measure_test_accuracy
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='MNIST Classification')
+    parser.add_argument('--dataset_kind', type=str, default='MNIST', help='kind of dataset & model (default: MNIST)')
     parser.add_argument('--image_size', type=int, default=32, help='image size (default: 32)')
     parser.add_argument('--n_classes', type=int, default=10, help='number of classes (default: 10)')
     parser.add_argument('--seed', type=int, default=0, help='random seed (default: 0)')
@@ -25,7 +26,14 @@ if __name__=='__main__':
     test_loader = get_test_loader(args)
     
     # Load model
-    model = MNIST_model(args)
+    if(args.dataset_kind == 'CelebA'):
+        model = CelebA_model(args)
+    elif (args.dataset_kind == 'DeepFashion'):
+        model = DeepFashion_model(args)
+    else:
+        model = MNIST_model(args)
+    model.cuda()
+    model.train()
     model.cuda()
     model.eval()
     
