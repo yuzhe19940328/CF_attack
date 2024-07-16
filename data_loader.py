@@ -86,7 +86,7 @@ def get_test_loader_celeba(args):
     celebA.target_transform = celebA_transform
 
     loader = data.DataLoader(dataset=celebA,
-                             batch_size=1000,
+                             batch_size=args.batch_size,
                              shuffle=False,
                              num_workers=1)
     return loader
@@ -138,7 +138,32 @@ def get_test_loader_deepfashion(args):
     deepfashion_test.target_transform = deepfashion_transform
 
     loader = data.DataLoader(dataset=deepfashion_test,
-                             batch_size=1000,
+                             batch_size=args.batch_size,
                              shuffle=False,
-                             num_workers=1)
+                             num_workers=0)
     return loader
+
+
+if __name__=='__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str, default='celeba', help='mnist | celeba | deepfashion')
+    parser.add_argument('--image_size', type=int, default=224, help='The size of image')
+    parser.add_argument('--batch_size', type=int, default=32, help='The size of batch')
+    args = parser.parse_args()
+    if args.dataset == 'mnist':
+        train_loader = get_train_loader(args)
+        test_loader = get_test_loader(args)
+    elif args.dataset == 'celeba':
+        train_loader = get_train_loader_celeba(args)
+        test_loader = get_test_loader_celeba(args)
+    elif args.dataset == 'deepfashion':
+        train_loader = get_train_loader_deepfashion(args)
+        test_loader = get_test_loader_deepfashion(args)
+    else:
+        raise ValueError('Invalid dataset')
+
+
+    print('The number of test data: ', len(test_loader.dataset[0]))
+    print('The number of test data: ', test_loader.dataset[0][1])
+    print('The number of test data: ', test_loader.dataset[0][1].size())
+

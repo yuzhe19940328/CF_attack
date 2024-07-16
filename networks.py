@@ -99,9 +99,9 @@ class CelebA_CNN(nn.Module):
 
 class ResNet(torch.nn.Module):
     """ResNet with the softmax chopped off and the batchnorm frozen"""
-    def __init__(self, input_shape, hparams):
+    def __init__(self, input_shape, type='resnet18'):
         super(ResNet, self).__init__()
-        if hparams['resnet18']:
+        if type == 'resnet18':
             self.network = torchvision.models.resnet18(pretrained=True)
             self.n_outputs = 512
         else:
@@ -126,13 +126,10 @@ class ResNet(torch.nn.Module):
         del self.network.fc
         self.network.fc = Identity()
 
-        self.freeze_bn()
-        self.hparams = hparams
-        self.dropout = nn.Dropout(hparams['resnet_dropout'])
 
     def forward(self, x):
         """Encode x into a feature vector of size n_outputs."""
-        return self.dropout(self.network(x))
+        return self.network(x)
 
 
 def Classifier(in_features, out_features, is_nonlinear=False):

@@ -16,15 +16,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='CelebA Classification')
     parser.add_argument('--dataset', type=str, default='celeba', help='kind of dataset & model ')
     parser.add_argument('--batch_size', type=int, default=32, help='input batch size for training (default: 64)')
-    parser.add_argument('--epochs', type=int, default=20, help='number of epochs to train (default: 10)')
+    parser.add_argument('--epochs', type=int, default=2, help='number of epochs to train (default: 10)')
     parser.add_argument('--lr', type=float, default=0.01, help='learning rate (default: 0.01)')
     parser.add_argument('--image_size', type=int, default=224, help='image size (default: 32)')
     parser.add_argument('--n_classes', type=int, default=10, help='number of classes (default: 10)')
     parser.add_argument('--n_tasks', type=int, default=5, help='how many tasks in this dataset')
+    parser.add_argument('--target_task', type=int, default=0, help='target task we want to attack')
 
 
     parser.add_argument('--seed', type=int, default=0, help='random seed (default: 0)')
-    parser.add_argument('--save_dir', type=str, default='checkpoint_all', help='directory to save checkpoints')
+    parser.add_argument('--load_dir', type=str, default='checkpoint_all', help='directory to load checkpoints')
+
+    parser.add_argument('--save_dir', type=str, default='fine_tune_checkpoint', help='directory to save checkpoints')
     args = parser.parse_args()
 
 
@@ -54,6 +57,12 @@ if __name__ == "__main__":
         model = DeepFashion_model(args)
 
 
+    load_path=os.path.join(args.load_dir, f'epoch_{19}.pt')
+
+    model.load(load_path)
+
+
+
     model.cuda()
     model.train()
 
@@ -63,18 +72,27 @@ if __name__ == "__main__":
             x,y = x.cuda(),y.cuda()
 
             for i in range(args.n_tasks):
-                temp_y = y[:,i]
-                temp_y = temp_y.cuda()
-                loss = model.updata_head(x, temp_y, i)
-                loss = model.update_feature_extractor(x, temp_y, i)
+
+                if i == args.target_task:
+                    continue
+                else:
+                    temp_y = y[:,i]
+                    temp_y = temp_y.cuda()
+                    #loss = model.updata_head(x, temp_y, i)
+                    loss = model.update_feature_extractor(x, temp_y, i)
+
+
 
         # save checkpoint
-        if not os.path.exists(args.save_dir):
-            os.makedirs(args.save_dir)
-        checkpoint_path = os.path.join(args.save_dir, f'epoch_{epoch}.pt')
-        model.save(checkpoint_path)
+        save_dir=os.path.join(args.save_dir, f'target_task_{args.target_task}')
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+
+        checkpoint_path = os.path.join(save_dir, f'epoch_{epoch}.pt')
+        model.save( checkpoint_path)
     
-    print('Training is done!')
+    print('Finetune is done!')
     
 
 
